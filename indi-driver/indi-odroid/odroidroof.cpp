@@ -17,7 +17,7 @@ Indi observatory roof driver for an Odroid board with relays and switches attach
 std::unique_ptr<OdroidRoof> rollOff(new OdroidRoof());
 
 // This is the max ontime for the motors. Safety cut out. Although a lot of damage can be done on this time!!
-#define MAX_ROLLOFF_DURATION    20    //TODO: Check if this is enough time.
+#define MAX_ROLLOFF_DURATION    22    //TODO: Check if this is enough time.
 
 void ISPoll(void *p);
 
@@ -80,7 +80,7 @@ OdroidRoof::OdroidRoof()
   fullOpenLimitSwitch   = ISS_OFF;
   fullClosedLimitSwitch = ISS_OFF;
   MotionRequest=0;
-  SetDomeCapability(DOME_CAN_ABORT | DOME_CAN_PARK);
+  SetDomeCapability(DOME_CAN_ABORT | DOME_CAN_PARK | DOME_HAS_VARIABLE_SPEED);
   setDomeConnection(CONNECTION_NONE);
 }
 
@@ -286,11 +286,11 @@ IPState OdroidRoof::Move(DomeDirection dir, DomeMotionCommand operation)
             DEBUG(INDI::Logger::DBG_WARNING, "Cannot close dome when mount is locking. See: Telescope parkng policy, in options tab");
             return IPS_ALERT;
         }
-        else if (dir == DOME_CW && getWeatherState() == IPS_ALERT)
-        {
-            DEBUG(INDI::Logger::DBG_WARNING, "Weather conditions are in the danger zone. Cannot open roof.");
-            return IPS_ALERT;
-        }
+//        else if (dir == DOME_CW && getWeatherState() == IPS_ALERT)
+//        {
+//            DEBUG(INDI::Logger::DBG_WARNING, "Weather conditions are in the danger zone. Cannot open roof.");
+//            return IPS_ALERT;
+//        }
         else if (dir == DOME_CCW && fullClosedLimitSwitch == ISS_ON)
         {
             DEBUG(INDI::Logger::DBG_WARNING, "Roof is already fully closed.");
