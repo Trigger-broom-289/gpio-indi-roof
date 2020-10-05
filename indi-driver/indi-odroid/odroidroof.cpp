@@ -242,7 +242,7 @@ void OdroidRoof::TimerHit()
            {
 		DEBUG(INDI::Logger::DBG_SESSION, "Roof is closed.");
                 setDomeState(DOME_PARKED);
-                DEBUG(INDI::Logger::DBG_WARNING, "Turning off relay. Setting GPIO0 -> 1 GPIO2 -> 1");
+                DEBUG(INDI::Logger::DBG_WARNING, "Turning off relay. Setting GPIO0 -> 1 GPIO1 -> 1");
                 system("gpio write 0 1");
                 system("gpio write 1 1");
                 std::string stateString = "CLOSED";
@@ -304,7 +304,7 @@ IPState OdroidRoof::Move(DomeDirection dir, DomeMotionCommand operation)
         }
         else if (dir == DOME_CCW)
         {
-            DEBUG(INDI::Logger::DBG_WARNING, "Turning on CLOSE relay. Setting GPIO0 -> 1 GPIO2 -> 0");
+            DEBUG(INDI::Logger::DBG_WARNING, "Turning on CLOSE relay. Setting GPIO0 -> 1 GPIO1 -> 0");
             system("gpio write 0 1");
             system("gpio write 1 0");
         }
@@ -361,7 +361,7 @@ IPState OdroidRoof::UnPark()
 bool OdroidRoof::Abort()
 {
     DEBUG(INDI::Logger::DBG_SESSION, "ABORT! Stopping motors");
-    DEBUG(INDI::Logger::DBG_WARNING, "Turning off relay. Setting GPIO0 -> 1 GPIO2 -> 1");
+    DEBUG(INDI::Logger::DBG_WARNING, "Turning off relay. Setting GPIO0 -> 1 GPIO1 -> 1");
     system("gpio write 0 1");
     system("gpio write 1 1");
     MotionRequest=-1;
