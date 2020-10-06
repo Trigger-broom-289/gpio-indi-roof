@@ -1,5 +1,16 @@
 /*******************************************************************************
 Indi observatory roof driver for an Odroid board with relays and switches attached to GPIO pins.
+
+Relays (write):
+GPIO 0 = pin 11
+GPIO 1 = pin 12
+
+Limit switches (digitalread):
+GPIO 4 = pin 16
+GPIO 5 = pin 18
+With front switch "pressed" when lid is closed
+with rear switch "released" when lid is closed
+Opposite when lid is open
 *******************************************************************************/
 #include "odroidroof.h"
 
@@ -286,11 +297,6 @@ IPState OdroidRoof::Move(DomeDirection dir, DomeMotionCommand operation)
             DEBUG(INDI::Logger::DBG_WARNING, "Cannot close dome when mount is locking. See: Telescope parkng policy, in options tab");
             return IPS_ALERT;
         }
-//        else if (dir == DOME_CW && getWeatherState() == IPS_ALERT)
-//        {
-//            DEBUG(INDI::Logger::DBG_WARNING, "Weather conditions are in the danger zone. Cannot open roof.");
-//            return IPS_ALERT;
-//        }
         else if (dir == DOME_CCW && fullClosedLimitSwitch == ISS_ON)
         {
             DEBUG(INDI::Logger::DBG_WARNING, "Roof is already fully closed.");
