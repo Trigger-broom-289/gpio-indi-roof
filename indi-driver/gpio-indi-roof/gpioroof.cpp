@@ -1,5 +1,5 @@
 /*******************************************************************************
-Indi observatory roof driver for an Odroid board with relays and switches attached to GPIO pins.
+Indi observatory roof driver for an Odroid /Raspberry pi board with relays and switches attached to GPIO pins.
 
 Relays (write):
 GPIO 0 = pin 11
@@ -12,7 +12,7 @@ With front switch "pressed" when lid is closed
 with rear switch "released" when lid is closed
 Opposite when lid is open
 *******************************************************************************/
-#include "odroidroof.h"
+#include "GpioRoof.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +25,7 @@ Opposite when lid is open
 #include <indicom.h>
 #include <wiringPi.h>
 
-std::unique_ptr<OdroidRoof> rollOff(new OdroidRoof());
+std::unique_ptr<GpioRoof> rollOff(new GpioRoof());
 
 // This is the max ontime for the motors. Safety cut out. Although a lot of damage can be done on this time!!
 #define MAX_ROLLOFF_DURATION    22    //TODO: Check if this is enough time.
@@ -40,7 +40,7 @@ void ISInit()
        return;
 
     isInit = 1;
-    if(rollOff.get() == 0) rollOff.reset(new OdroidRoof());
+    if(rollOff.get() == 0) rollOff.reset(new GpioRoof());
 
 }
 
@@ -86,7 +86,7 @@ void ISSnoopDevice (XMLEle *root)
     rollOff->ISSnoopDevice(root);
 }
 
-OdroidRoof::OdroidRoof()
+GpioRoof::GpioRoof()
 {
   fullOpenLimitSwitch   = ISS_OFF;
   fullClosedLimitSwitch = ISS_OFF;
@@ -98,7 +98,7 @@ OdroidRoof::OdroidRoof()
 /**
  * Init all properties
  */
-bool OdroidRoof::initProperties()
+bool GpioRoof::initProperties()
 {
     DEBUG(INDI::Logger::DBG_DEBUG, "Init props");
     INDI::Dome::initProperties();
@@ -111,13 +111,13 @@ bool OdroidRoof::initProperties()
     return true;
 }
 
-bool OdroidRoof::ISSnoopDevice (XMLEle *root)
+bool GpioRoof::ISSnoopDevice (XMLEle *root)
 {
 	return INDI::Dome::ISSnoopDevice(root);
 }
 
 
-bool OdroidRoof::SetupParms()
+bool GpioRoof::SetupParms()
 {
     DEBUG(INDI::Logger::DBG_DEBUG, "Setting up params");
     InitPark();
@@ -148,29 +148,29 @@ bool OdroidRoof::SetupParms()
 }
 
 
-bool OdroidRoof::Connect()
+bool GpioRoof::Connect()
 {
     DEBUG(INDI::Logger::DBG_SESSION, "Connecting");
     return true;
 }
 
-OdroidRoof::~OdroidRoof()
+GpioRoof::~GpioRoof()
 {
 
 }
 
-const char * OdroidRoof::getDefaultName()
+const char * GpioRoof::getDefaultName()
 {
-    return (char *)"Odroid Roof";
+    return (char *)"GPIO Roof";
 }
 
-bool OdroidRoof::ISNewSwitch (const char *dev, const char *name, ISState *states, char *names[], int n)
+bool GpioRoof::ISNewSwitch (const char *dev, const char *name, ISState *states, char *names[], int n)
 {
 	return INDI::Dome::ISNewSwitch(dev, name, states, names, n);
 }
 
 
-bool OdroidRoof::updateProperties()
+bool GpioRoof::updateProperties()
 {
     DEBUG(INDI::Logger::DBG_SESSION, "Updating props");
     INDI::Dome::updateProperties();
@@ -187,7 +187,7 @@ bool OdroidRoof::updateProperties()
     return true;
 }
 
-bool OdroidRoof::Disconnect()
+bool GpioRoof::Disconnect()
 {
     DEBUG(INDI::Logger::DBG_SESSION, "Disconnecting");
     return true;
@@ -196,7 +196,7 @@ bool OdroidRoof::Disconnect()
 /**
  * TimerHit gets called by the indi client every 1sec when the roof is moving.
  */
-void OdroidRoof::TimerHit()
+void GpioRoof::TimerHit()
 {
 
     DEBUG(INDI::Logger::DBG_DEBUG, "Timer hit");
@@ -272,7 +272,7 @@ void OdroidRoof::TimerHit()
    }
 }
 
-bool OdroidRoof::saveConfigItems(FILE *fp)
+bool GpioRoof::saveConfigItems(FILE *fp)
 {
     return INDI::Dome::saveConfigItems(fp);
 }
@@ -281,7 +281,7 @@ bool OdroidRoof::saveConfigItems(FILE *fp)
  * Move the roof.
  *
  **/
-IPState OdroidRoof::Move(DomeDirection dir, DomeMotionCommand operation)
+IPState GpioRoof::Move(DomeDirection dir, DomeMotionCommand operation)
 {
     if (operation == MOTION_START)
     {
@@ -335,7 +335,7 @@ IPState OdroidRoof::Move(DomeDirection dir, DomeMotionCommand operation)
 /**
  * Park the roof = close
  **/
-IPState OdroidRoof::Park()
+IPState GpioRoof::Park()
 {
     IPState rc = INDI::Dome::Move(DOME_CCW, MOTION_START);
     if (rc==IPS_BUSY)
@@ -350,7 +350,7 @@ IPState OdroidRoof::Park()
 /**
  * Unpark the roof = open
  **/
-IPState OdroidRoof::UnPark()
+IPState GpioRoof::UnPark()
 {
     IPState rc = INDI::Dome::Move(DOME_CW, MOTION_START);
     if (rc==IPS_BUSY) {
@@ -364,7 +364,7 @@ IPState OdroidRoof::UnPark()
 /**
  * Abort motion.
  **/
-bool OdroidRoof::Abort()
+bool GpioRoof::Abort()
 {
     DEBUG(INDI::Logger::DBG_SESSION, "ABORT! Stopping motors");
     DEBUG(INDI::Logger::DBG_WARNING, "Turning off relay. Setting GPIO0 -> 1 GPIO1 -> 1");
@@ -383,7 +383,7 @@ bool OdroidRoof::Abort()
     return true;
 }
 
-float OdroidRoof::CalcTimeLeft(timeval start)
+float GpioRoof::CalcTimeLeft(timeval start)
 {
     double timesince;
     double timeleft;
@@ -399,7 +399,7 @@ float OdroidRoof::CalcTimeLeft(timeval start)
 /**
  * Get the state of the full open limit switch. This function will also switch off the motors as a safety override.
  **/
-bool OdroidRoof::getFullOpenedLimitSwitch()
+bool GpioRoof::getFullOpenedLimitSwitch()
 {
   if(wiringPiSetup() == -1)
   printf("ERROR");
@@ -419,7 +419,7 @@ bool OdroidRoof::getFullOpenedLimitSwitch()
 /**
  * Get the state of the full closed limit switch. This function will also switch off the motors as a safety override.
  **/
-bool OdroidRoof::getFullClosedLimitSwitch()
+bool GpioRoof::getFullClosedLimitSwitch()
 {
   if(wiringPiSetup() == -1)
   printf("ERROR");
