@@ -12,7 +12,7 @@ With front switch "pressed" when lid is closed
 with rear switch "released" when lid is closed
 Opposite when lid is open
 *******************************************************************************/
-#include "GpioRoof.h"
+#include "gpioRoof.h"
 
 #include <stdio.h>
 #include <stdlib.h>
