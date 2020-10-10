@@ -26,7 +26,7 @@ set(odroidrolloff_SRCS
    )
 
 cmake_policy(SET CMP0003 OLD)
-add_executable(indi_roof_gpio ${gpioroof_SRCS})
+add_executable(indi_roof_gpio ${gpiorolloff_SRCS})
 target_link_libraries(indi_roof_gpio ${INDI_DRIVER_LIBRARIES})
 target_link_libraries(indi_roof_gpio ${WIRINGPI_LIBRARIES} rt)
 target_link_libraries(indi_roof_gpio ${CMAKE_THREAD_LIBS_INIT})
