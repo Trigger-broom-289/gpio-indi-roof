@@ -2,6 +2,6 @@
 mkdir build
 cd build
 rm * -rf
-cmake -DCMAKE_INSTALL_PREFIX=/usr ../indi-odroid/
+cmake -DCMAKE_INSTALL_PREFIX=/usr ../gpio-indi-roof/
 sudo make install
 
