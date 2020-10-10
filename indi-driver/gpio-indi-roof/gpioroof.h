@@ -3,11 +3,11 @@
 #include <sys/time.h>
 
 
-class OdroidRoof : public INDI::Dome
+class GpioRoof : public INDI::Dome
 {
     public:
-        OdroidRoof();
-        virtual ~OdroidRoof();
+        GpioRoof();
+        virtual ~GpioRoof();
 
         virtual bool initProperties();
         const char *getDefaultName();
