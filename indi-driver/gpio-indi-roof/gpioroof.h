@@ -31,6 +31,7 @@ class GpioRoof : public INDI::Dome
 
         virtual bool getFullOpenedLimitSwitch();
         virtual bool getFullClosedLimitSwitch();
+	virtual bool getHomeClosedLimitSwitch();
 
     private:
 
@@ -39,6 +40,7 @@ class GpioRoof : public INDI::Dome
 
         ISState fullOpenLimitSwitch;
         ISState fullClosedLimitSwitch;
+	ISState HomeClosedLimitSwitch;
         bool IsTelescopeParked;
 
         double MotionRequest;
@@ -48,3 +50,4 @@ class GpioRoof : public INDI::Dome
         float CalcTimeLeft(timeval);
 
 };
+

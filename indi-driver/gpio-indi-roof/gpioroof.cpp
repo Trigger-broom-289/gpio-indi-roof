@@ -1,13 +1,12 @@
 /*******************************************************************************
 Indi observatory roof driver for an Odroid /Raspberry pi board with relays and switches attached to GPIO pins.
-
 Relays (write):
-GPIO 0 = pin 11
-GPIO 1 = pin 12
-
+GPIO 0 = pin 11    (open relay)
+GPIO 1 = pin 12    (close relay)
 Limit switches (digitalread):
-GPIO 4 = pin 16
-GPIO 5 = pin 18
+GPIO 4 = pin 16    (open switch)
+GPIO 5 = pin 18    (close switch)
+GPIO 6 = pin 22    (Mount home position switch)
 With front switch "pressed" when lid is closed
 with rear switch "released" when lid is closed
 Opposite when lid is open
@@ -90,6 +89,7 @@ GpioRoof::GpioRoof()
 {
   fullOpenLimitSwitch   = ISS_OFF;
   fullClosedLimitSwitch = ISS_OFF;
+  HomeClosedLimitSwitch = ISS_OFF;
   MotionRequest=0;
   SetDomeCapability(DOME_CAN_ABORT | DOME_CAN_PARK | DOME_HAS_VARIABLE_SPEED);
   setDomeConnection(CONNECTION_NONE);
@@ -123,23 +123,36 @@ bool GpioRoof::SetupParms()
     InitPark();
     fullOpenLimitSwitch   = ISS_OFF;
     fullClosedLimitSwitch = ISS_OFF;
+    HomeClosedLimitSwitch = ISS_OFF;
     std::string roofStateString = "UNKNOWN";
+
     if (getFullOpenedLimitSwitch()) {
         DEBUG(INDI::Logger::DBG_DEBUG, "Setting open flag on NOT PARKED");
         fullOpenLimitSwitch = ISS_ON;
         setDomeState(DOME_IDLE);
         roofStateString = "OPEN";
     }
+
     if (getFullClosedLimitSwitch()) {
         DEBUG(INDI::Logger::DBG_DEBUG, "Setting closed flag on PARKED");
         fullClosedLimitSwitch = ISS_ON;
         setDomeState(DOME_PARKED);
         if(isParked()) {
           roofStateString = "PARKED CLOSED";
-        } else {
+    	}
+    }
+
+    if (getHomeClosedLimitSwitch()) {
+        DEBUG(INDI::Logger::DBG_DEBUG, "Setting Home flag on PARKED");
+        fullClosedLimitSwitch = ISS_ON;
+        setDomeState(DOME_PARKED);
+        if(isParked()) {
+          roofStateString = "Mount Parked";
+	} else {
           roofStateString = "CLOSED";
         }
     }
+
     char status[32];
     strcpy(status, roofStateString.c_str());
     IUSaveText(&CurrentStateT[0], status);
@@ -161,7 +174,7 @@ GpioRoof::~GpioRoof()
 
 const char * GpioRoof::getDefaultName()
 {
-    return (char *)"GPIO Roof";
+    return (char *)"Odroid Roof";
 }
 
 bool GpioRoof::ISNewSwitch (const char *dev, const char *name, ISState *states, char *names[], int n)
@@ -287,6 +300,7 @@ IPState GpioRoof::Move(DomeDirection dir, DomeMotionCommand operation)
     {
         updateProperties();
         // DOME_CW --> OPEN. If can we are ask to "open" while we are fully opened as the limit switch indicates, then we simply return false.
+	//## Do I Need To Add Homeclosedlimitswitch Here
         if (dir == DOME_CW && fullOpenLimitSwitch == ISS_ON)
         {
             DEBUG(INDI::Logger::DBG_WARNING, "Roof is already fully opened.");
@@ -297,6 +311,7 @@ IPState GpioRoof::Move(DomeDirection dir, DomeMotionCommand operation)
             DEBUG(INDI::Logger::DBG_WARNING, "Cannot close dome when mount is locking. See: Telescope parkng policy, in options tab");
             return IPS_ALERT;
         }
+	//## Do I Need To Add Homeclosedlimitswitch Here
         else if (dir == DOME_CCW && fullClosedLimitSwitch == ISS_ON)
         {
             DEBUG(INDI::Logger::DBG_WARNING, "Roof is already fully closed.");
@@ -373,7 +388,7 @@ bool GpioRoof::Abort()
     MotionRequest=-1;
 
     // If both limit switches are off, then we're neither parked nor unparked or a hardware failure (cable / rollers / jam).
-    if (getFullOpenedLimitSwitch() == false && getFullClosedLimitSwitch() == false)
+    if (getFullOpenedLimitSwitch() == false && getFullClosedLimitSwitch() == false &&getHomeClosedLimitSwitch())
     {
         IUResetSwitch(&ParkSP);
         ParkSP.s = IPS_ALERT;
@@ -435,3 +450,24 @@ bool GpioRoof::getFullClosedLimitSwitch()
         return false;
     }
 }
+
+/**
+ * Get the state of the home limit switch. This function will also switch off the motors as a safety override.
+ **/
+bool GpioRoof::getHomeClosedLimitSwitch()
+{
+  if(wiringPiSetup() == -1)
+  printf("ERROR");
+
+    DEBUG(INDI::Logger::DBG_SESSION, "Checking closed home switch");
+    if (digitalRead(6) != 1) {
+        HomeClosedLimitSwitch = ISS_ON;
+	SetParked(true);
+        return true;
+    }
+    else {
+        DEBUG(INDI::Logger::DBG_SESSION, "Closed  home switch OFF");
+        return false;
+    }
+}
+
