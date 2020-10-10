@@ -22,14 +22,14 @@ include_directories(${NOVA_INCLUDE_DIR})
 
 ################ Roll Off ################
 set(odroidrolloff_SRCS
-        ${CMAKE_CURRENT_SOURCE_DIR}/odroidroof.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/gpioroof.cpp
    )
 
 cmake_policy(SET CMP0003 OLD)
-add_executable(indi_roof_odroid ${odroidrolloff_SRCS})
-target_link_libraries(indi_roof_odroid ${INDI_DRIVER_LIBRARIES})
-target_link_libraries(indi_roof_odroid ${WIRINGPI_LIBRARIES} rt)
-target_link_libraries(indi_roof_odroid ${CMAKE_THREAD_LIBS_INIT})
-install(TARGETS indi_roof_odroid RUNTIME DESTINATION bin )
-install(FILES indi_roof_odroid.xml DESTINATION ${INDI_DATA_DIR})
+add_executable(indi_roof_gpio ${gpioroof_SRCS})
+target_link_libraries(indi_roof_gpio ${INDI_DRIVER_LIBRARIES})
+target_link_libraries(indi_roof_gpio ${WIRINGPI_LIBRARIES} rt)
+target_link_libraries(indi_roof_gpio ${CMAKE_THREAD_LIBS_INIT})
+install(TARGETS indi_roof_gpio RUNTIME DESTINATION bin )
+install(FILES indi_roof_gpio.xml DESTINATION ${INDI_DATA_DIR})
 
