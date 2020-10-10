@@ -21,7 +21,7 @@ include_directories(${INDI_INCLUDE_DIR})
 include_directories(${NOVA_INCLUDE_DIR})
 
 ################ Roll Off ################
-set(odroidrolloff_SRCS
+set(gpiorolloff_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/gpioroof.cpp
    )
 
